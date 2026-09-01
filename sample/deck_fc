@@ -1,0 +1,101 @@
+* Folded-cascode fully differential OPAMP with CMFB
+.include "pdk"
+.include @PARAM_PATH@
+
+VVDD VDD 0 dc=1.2
+VVCM VCM 0 dc=0.6
+VVB1 vb1 0 dc=0.75
+VVB2 vb2 0 dc=0.75
+VVB5 vb5 0 dc=0.75
+VVREF vref 0 dc=0.6
+VINP inp VCM dc=0 ac=0.5
+VINN inn VCM dc=0 ac=-0.5
+
+MP1P fp vb1 VDD VDD pmos l={L0} w={W0} m={M0}
+MP2P x1p cm fp VDD pmos l={L1} w={W1} m={M1}
+MN5P fp inp vb3 0 nmos l={L2} w={W2} m={M2}
+MN3P x1p vb3 n3p 0 nmos l={L3} w={W3} m={M3}
+MN4P n3p vb4 0 0 nmos l={L4} w={W4} m={M4}
+MP8P outp vb2 VDD VDD pmos l={L5} w={W5} m={M5}
+MN9P outp x1p 0 0 nmos l={L6} w={W6} m={M6}
+
+MP1N fn vb1 VDD VDD pmos l={L0} w={W0} m={M0}
+MP2N x1n cm fn VDD pmos l={L1} w={W1} m={M1}
+MN5N fn inn vb3 0 nmos l={L2} w={W2} m={M2}
+MN3N x1n vb3 n3n 0 nmos l={L3} w={W3} m={M3}
+MN4N n3n vb4 0 0 nmos l={L4} w={W4} m={M4}
+MP8N outn vb2 VDD VDD pmos l={L5} w={W5} m={M5}
+MN9N outn x1n 0 0 nmos l={L6} w={W6} m={M6}
+
+MN6 vb3 vb3 vb4 0 nmos l={L7} w={W7} m={M7}
+MN7 vb4 vb4 0 0 nmos l={L8} w={W8} m={M8}
+
+R1P outp ncp {R0}
+C1P ncp x1p {C0}
+R1N outn ncn {R0}
+C1N ncn x1n {C0}
+
+CLP outp 0 {C2}
+CLN outn 0 {C2}
+
+R2P outp vcmfb {R1}
+C2P outp vcmfb {C1}
+R2N outn vcmfb {R1}
+C2N outn vcmfb {C1}
+
+MP10 p11s vb5 VDD VDD pmos l={L9} w={W9} m={M9}
+MP11L cm vcmfb p11s VDD pmos l={L10} w={W10} m={M10}
+MP11R n12g vref p11s VDD pmos l={L10} w={W10} m={M10}
+MN12L cm n12g n13l 0 nmos l={L11} w={W11} m={M11}
+MN12R n12g n12g n13r 0 nmos l={L11} w={W11} m={M11}
+MN13L n13l n13r 0 0 nmos l={L12} w={W12} m={M12}
+MN13R n13r n13r 0 0 nmos l={L12} w={W12} m={M12}
+
+.control
+option numdgt=8
+set units=degrees
+
+op
+let negative_total_current_uA = i(VVDD) * 1e6
+echo negative_total_current_uA $&negative_total_current_uA > @SPEC_PATH@
+
+reset
+ac dec 10 1k 10G
+
+let vod = v(outp) - v(outn)
+let gain_db = vdb(vod)[0]
+
+if (gain_db gt 0) & (vecmin(vdb(vod)) le 0)
+  meas ac ugbw_hz when vdb(vod)=0 fall=1
+  meas ac phase_deg find vp(vod) when vdb(vod)=0 fall=1
+  let log10_ugbw = log10(ugbw_hz)
+  let pm_deg = phase_deg - 180 * phase_deg / abs(phase_deg)
+else
+  let log10_ugbw = -1e10
+  let pm_deg = -1e10
+end
+
+echo gain_db $&gain_db >> @SPEC_PATH@
+echo log10_ugbw $&log10_ugbw >> @SPEC_PATH@
+echo pm_deg $&pm_deg >> @SPEC_PATH@
+
+alter VINP ac=1
+alter VINN ac=1
+
+ac dec 10 1k 10G
+
+let vocm = 0.5 * (v(outp) + v(outn))
+let vocm_re = real(vocm)
+let vocm_im = imag(vocm)
+let cm_re = vocm_re[0]
+let cm_im = vocm_im[0]
+let cm_mag = sqrt(cm_re * cm_re + cm_im * cm_im)
+if cm_mag lt 1e-20
+  let cm_mag = 1e-20
+end
+let cmrr_db = ac1.gain_db - 20.0 * log10(cm_mag)
+
+echo cmrr_db $&cmrr_db >> @SPEC_PATH@
+
+.endc
+.end
