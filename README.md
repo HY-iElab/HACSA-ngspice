@@ -1,18 +1,18 @@
 # HACSA-ngspice
 
-HACSA-ngscpie는 ngspice로 analog circuit sizing을 실행하기 위한 Python interface이다.
+HACSA-ngspice는 ngspice 기반 analog circuit sizing용 Python interface이다.
 
 ## 설치
 
 ### ngspice
 
-Windows에서는 [ngspice 다운로드 페이지](https://ngspice.sourceforge.io/download.html)에서 Windows 64-bit binary를 내려받아 압축을 푼 뒤, `ngspice_con.exe`가 있는 폴더를 `PATH`에 추가한다. 새 PowerShell에서 다음 명령으로 설치를 확인한다.
+Windows에서는 [ngspice 다운로드 페이지](https://ngspice.sourceforge.io/download.html)에서 Windows 64-bit binary를 받아 압축을 풀고, `ngspice_con.exe`가 있는 폴더를 `PATH`에 추가한다. 새 PowerShell에서 설치를 확인한다.
 
 ```powershell
 ngspice_con.exe -v
 ```
 
-Linux(Debian/Ubuntu)에서는 다음 명령으로 설치와 확인을 한다.
+Debian/Ubuntu에서는 다음과 같이 설치·확인한다.
 
 ```bash
 sudo apt update
@@ -28,65 +28,127 @@ Python 3.6.2 이상.
 python -m pip install -r requirements.txt
 ```
 
-## 준비 항목
-
-기본 사용 경로는 `AutoCircuit`이다. `AutoCircuit`은 spice deck에서 설계 변수와 spec 이름을 읽고, optimizer가 제안한 normalized design vector를 spice가 실행할 수 있는 param 파일로 변환한다.
-
-일반적인 사용에서는 `Solver`나 `Circuit` class를 수정할 필요가 없다.
-
 ## 실행
 
+`hacsa.py`에 JSON 설정 파일을 전달한다.
+
 ```bash
-python main.py
+python hacsa.py sample_manual.json
 ```
 
+이 명령은 `sample/deck_fc`의 최적화 결과를 `result_0`에 저장한다. 실행 시작 시 기존 `temp_0`과 `result_0`은 교체된다.
 
-## 기본 설정
+### 설정 파일
 
-`main.py`의 기본 설정 흐름은 다음과 같다.
+target과 weight를 직접 지정한 설정 예제이다(`sample_manual.json` 참고).
 
-```python
-from Instance.AutoCircuit import AutoCircuit
-
-run_name = 0
-circuit = AutoCircuit(run_name=run_name, deck_path="path/to/deck", parallel=True, digits=3)
+```json
+{
+  "run_name": "fc",
+  "deck_path": "sample/deck_fc",
+  "deck_imports": ["sample/pdk"],
+  "reject_spec": [-100.0, 0.0, 6.0, 40.0, 40.0],
+  "max_evals": 20000,
+  "early_stop": false,
+  "target_spec": [-5.2232, 38.2163, 6.6529, 60.0, 70.4884],
+  "pre_weight": [0.02, 0.025, 0.5, 0.015625, 0.025],
+  "post_weight": [0.02, 0.025, 0.5, 0.0, 0.025],
+  "design_space": {
+    "R": [1.0, 1000.0, null, "k", true],
+    "C": [10, 1000, null, "f", false],
+    "L": [180, 360, 5, "n", false],
+    "W": [45, 90, 5, "n", false],
+    "M": [1, 60, 1, "", false]
+  }
+}
 ```
 
-- `run_name`: 실행 중 생성되는 임시 폴더 이름에 붙일 실행 식별자. 빈 문자열이면 `temp`, `run_name=0`이면 `temp_0`, `run_name="test"`이면 `temp_test`를 사용. 
-- `deck_path`: deck 파일의 경로. main.py를 기준으로 하는 상대경로와 절대경로 둘 다 가능.
-- `deck_imports`: deck이 실행되기 위해 같은 폴더에 있어야 하는 파일들의 경로. 예를 들어 deck이 `.include "pdk"`를 사용하려면, 같은 폴더의 `pdk` 파일이 `deck_imports`에 지정되어야 한다. (그런 제약이 없다면 생략.)
-- `parallel`: `True`이면 batch의 design들을 thread pool에서 병렬로 평가하고, `False`이면 하나씩 순차 평가한다. 기본값은 `True`이다.
-- `digits`: 설계변수가 param 파일에 기록되는 유효숫자이다. 기본값은 `3`이다.
+- `run_name`: 실행 식별자. 빈 문자열이면 `temp`와 `result`, `"xxx"`이면 `temp_xxx`와 `result_xxx`.
+- `deck_path`: deck 경로. 상대 경로는 `hacsa.py` 폴더 기준이며, 절대 경로도 지원.
+- `deck_imports`: deck과 같은 실행 폴더에 복사할 파일 경로 목록. deck_fc의 `.include "pdk"`를 위해 `sample/pdk`를 지정한다. 여러 파일은 [ ] 안에 순서대로 나열하고, 보조 파일이 없으면 생략한다.
+- `reject_spec`: 보관할 design의 spec 하한. 하나라도 미달하면 design을 제외한다(생략 시 필터 미적용). 기본 저장소는 통과한 design 중 Pareto set을 보관한다.
+- `max_evals`: solver의 평가 종료 기준 횟수. batch 단위로 평가하므로 실제 횟수는 조금 넘을 수 있다.
+- `early_stop`: target 달성 시 종료 여부(기본값 `false`).
+- `target_spec`: 각 spec의 최소 목표값(생략 시 자동 설정).
+- `pre_weight`: 하나라도 target 미달일 때 FoM에 적용할 양의 가중치.
+- `post_weight`: 모든 target 달성 시 FoM에 적용할 양의 가중치. 두 weight 중 하나라도 생략하면 둘 다 자동 설정.
+- `design_space`: deck의 설계 변수별 [탐색 범위](#design-space-정의). 배열 순서는 `[lower, upper, resolution, unit, is_log]`.
 
-`AutoCircuit`은 시작 시 기존 임시 폴더를 지우고 새로 만든다. 임시 폴더의 `error`에는 SPICE가 해당 param의 netlist를 정상적으로 측정하지 못했을 때 그 param 파일이 이동한다. 이는 HACSA 오류가 아니라 SPICE 측정 실패 기록이다.
+`reject_spec`, `target_spec`, `pre_weight`, `post_weight`는 모두 deck의 spec 저장 순서를 따른다(`sample/deck_fc`의 대응은 아래 표 참조).
 
+| index | deck에 저장된 spec | `reject_spec` | `target_spec` | `pre_weight` | `post_weight` |
+|---:|---|---:|---:|---:|---:|
+| 0 | `negative_total_current_uA` | -100.0 | -5.2232 | 0.02 | 0.02 |
+| 1 | `gain_db` | 0.0 | 38.2163 | 0.025 | 0.025 |
+| 2 | `log10_ugbw` | 6.0 | 6.6529 | 0.5 | 0.5 |
+| 3 | `pm_deg` | 40.0 | 60.0 | 0.015625 | 0.0 |
+| 4 | `cmrr_db` | 40.0 | 70.4884 | 0.025 | 0.025 |
 
-```python
-circuit.setTargetSpec([-5.2232, 38.2163, 6.6529, 60.0])
-circuit.setPreWeight([1 / 50.0, 1 / 40.0, 1 / 2.0, 1 / 64.0])
-circuit.setPostWeight([1 / 50.0, 1 / 40.0, 1 / 2.0, 0.0])
-circuit.setDesignSpace({
-    # Design Space: (lower, upper, resolution, unit, is_log)
-    "I": (1.0, 5.0, None, "u", True),
-    "R": (1.0, 1e3, None, "k", True),
-    "C": (10, 1000, None, "f", False),
-    "L": (180, 360, 5, "n", False),
-    "W": (45, 90, 5, "n", False),
-    "M": (1, 60, 1, "", False),
-})
-# circuit.autoFoM(k=7, target=False)
-# circuit.testDeck()
+JSON에 추가할 수 있는 선택 항목이다.
+
+- `solver`: [사용할 solver](#solver-선택)(기본값 `"CMAES"`).
+- `auto_fom`: 자동 설정용 Sobol 표본 수의 지수(기본값 `7`). 표본 수는 `2^auto_fom`.
+- `parallel`: ngspice의 design 평가 방식. `true`는 병렬(기본값), `false`는 순차 평가.
+- `digits`: deck에 기록할 파라미터의 최대 소수 자릿수(기본값 `3`, 0.xxx). `resolution`이 `null`이면 탐색 간격은 `10**(-digits)`.
+
+### Solver 선택
+
+다른 solver를 사용하려면 JSON에 `solver`를 추가한다.
+
+```json
+"solver": "LSHADE"
 ```
 
-- `setTargetSpec(...)`: 각 spec의 최소 충족 값 (target)을 정한다. Spec의 순서는 deck에서 spec을 저장한 순서와 같다.
-- `setPreWeight(...)`: target을 만족하지 못한 design을 평가할 spec별 가중치를 설정.
-- `setPostWeight(...)`: target을 만족한 design에 대한 spec별 가중치를 설정.
-- `setDesignSpace(...)`: deck의 설계 변수별 `(lower, upper, resolution, unit, is_log)`를 설정. (자세한 내용은 [여기에](#design-space-정의))
-- `testDeck()`: 모든 normalized parameter가 `lowwer`인 netlist와 `upper`인 netlist를 만들고 spice를 수행한다. 디버깅용 함수.
+기본 지원 solver와 기반 논문:
 
-### 자동 가중치 & target 설정
+- `CMAES`: Nikolaus Hansen and Andreas Ostermeier, [*Adapting Arbitrary Normal Mutation Distributions in Evolution Strategies: The Covariance Matrix Adaptation*](https://doi.org/10.1109/ICEC.1996.542381), 1996.
+- `LSHADE`: Ryoji Tanabe and Alex S. Fukunaga, [*Improving the Search Performance of SHADE Using Linear Population Size Reduction*](https://doi.org/10.1109/CEC.2014.6900380), 2014.
+- `TuRBO`: David Eriksson, Michael Pearce, Jacob Gardner, Ryan D. Turner, Matthias Poloczek, [*Scalable Global Optimization via Local Bayesian Optimization*](https://proceedings.neurips.cc/paper/2019/hash/6c990b7aca7bc7058f5e98ea909e924b-Abstract.html), 2019.
 
-`setDesignSpace(...)` 뒤 `autoFoM(k)`를 호출하면 `2**k`개의 Sobol 표본을 시뮬레이션하여 pre/post weight를 자동 설정한다. 기본값 `target=True`는 설정된 target을 사용하고, `target=False`는 표본 평균을 target으로 설정한다. 이 함수를 통해 얻은 weight과 target은 custom weight, target의 기준점으로 사용할 수 있다.
+`Solver` interface를 구현해 `Solver` 폴더에 두면 custom solver를 사용할 수 있다. 파일과 클래스 이름은 같아야 한다(`XXX.py` → `class XXX`).
+
+### Target과 weight 자동 설정
+
+입력한 target과 weight pair는 그대로 쓰고, 빠진 쪽만 ngspice로 Sobol 표본을 평가해 구한다.
+
+| `target_spec` | `pre_weight`, `post_weight` | 동작 |
+|---|---|---|
+| 입력 | 둘 다 입력 | 자동 표본 평가 없음 |
+| 생략 | 둘 다 입력 | target만 자동 설정 |
+| 입력 | 하나 이상 생략 | 두 weight을 자동 설정 |
+| 생략 | 하나 이상 생략 | target과 두 weight을 모두 자동 설정 |
+
+`sample_auto.json`처럼 target과 weight를 모두 생략하면 자동 설정한 값을 FoM 튜닝의 시작점으로 쓸 수 있다.
+
+```bash
+python hacsa.py sample_auto.json
+```
+
+`sample_auto.json`은 다음과 같다.
+
+```json
+{
+  "run_name": "ts",
+  "deck_path": "sample/deck_ts",
+  "deck_imports": ["sample/pdk"],
+  "reject_spec": [-100.0, 0.0, 6.0, 40.0],
+  "max_evals": 20000,
+  "design_space": {
+    "I": [1.0, 5.0, null, "u", true],
+    "C": [10, 1000, null, "f", false],
+    "L": [180, 360, 5, "n", false],
+    "W": [45, 90, 5, "n", false],
+    "M": [1, 60, 1, "", false],
+    "M0": [20, 60, 1, "", false]
+  }
+}
+```
+
+`auto_fom`을 추가해 target·weight 자동 설정용 표본 수를 기본 $2^7 = 128$에서 바꾼다.
+
+자동 계산은 각 spec의 측정 실패값만 제외하고 mean/min/max를 구한다. 같은 design의 다른 spec이 정상이면 그 값은 계산에 포함한다. 각 spec에는 정상 측정값이 하나 이상 필요하다.
+
+세부 조정은 [tutorial.ipynb](tutorial.ipynb)를 참고한다.
 
 ## Deck 작성 규칙
 
@@ -98,7 +160,7 @@ circuit.setDesignSpace({
 .include @PARAM_PATH@
 ```
 
-실행 중 `@PARAM_PATH@`는 `param_0`, `param_1` 등의 파일 이름으로 치환된다.
+`@PARAM_PATH@`는 실행 중 `param_0`, `param_1`, ...로 치환된다.
 
 ### 2. 설계 변수 이름
 
@@ -112,14 +174,14 @@ C0 n1 0 {C0}
 
 이름 규칙은 다음과 같다.
 
-- prefix는 영문자와 `_`의 임의 조합이다: `L`, `W`, `M`, `R`, `C`, `_Aa_Bce_`, `AaaeE_FG`
+- prefix는 영문자와 `_`의 조합이다: `L`, `W`, `M`, `R`, `C`, `_Aa_Bce_`, `AaaeE_FG`
 - suffix는 `0`부터 시작하는 정수이다.
 - 같은 prefix 안에서는 번호를 `L0`, `L1`, `L2`처럼 연속해서 붙인다.
-- 변수가 하나만 있는 경우에도 `R0`처럼 `0` suffix를 붙인다.
+- 변수가 하나여도 `R0`처럼 `0` suffix를 붙인다.
 
 ### 3. Spec 저장
 
-모든 spec은 deck에서 직접 계산하고 `@SPEC_PATH@`에 저장하게 작성한다.
+모든 spec은 deck에서 계산하고 `@SPEC_PATH@`에 저장한다.
 
 ```spice
 echo negative_total_current_uA $&negative_total_current_uA > @SPEC_PATH@
@@ -127,11 +189,11 @@ echo gain_db $&gain_db >> @SPEC_PATH@
 echo log10_ugbw $&log10_ugbw >> @SPEC_PATH@
 ```
 
-`AutoCircuit`은 위 deck으로부터 `negative_total_current_uA`, `gain_db`, `log10_ugbw`를 spec 이름으로 읽는다. `setTargetSpec`, `setPreWeight`, `setPostWeight`의 값도 이 순서를 따른다.
+`AutoCircuit`은 이 순서대로 `negative_total_current_uA`, `gain_db`, `log10_ugbw`를 spec 이름으로 읽는다. `reject_spec`, `target_spec`, `pre_weight`, `post_weight`도 반드시 같은 순서를 사용한다.
 
-실행 중 `@SPEC_PATH@`는 `spec_0`, `spec_1` 등의 파일 이름으로 치환된다.
+`@SPEC_PATH@`는 실행 중 `spec_0`, `spec_1`, ...로 치환된다. SPICE가 spec 파일을 만들지 못하면 해당 design의 spec을 매우 작은 값으로 처리하고, param 파일을 temp 폴더의 `error`로 옮긴다.
 
-모든 spec은 클수록 좋은 값으로 저장해야 한다. 작을수록 좋은 값은 deck에서 부호를 반전하여 저장한다.
+모든 spec은 클수록 좋게 저장해야 한다. 작을수록 좋은 값은 deck에서 부호를 반전한다.
 
 ## 최소 예제
 
@@ -149,52 +211,52 @@ echo gain_db $&gain_db > @SPEC_PATH@
 .end
 ```
 
-이에 대응하는 `main.py` 설정은 예시는 다음과 같다.
+이 deck에 대응하는 JSON 설정:
 
-```python
-circuit.setTargetSpec([40.0])
-circuit.setPreWeight([1 / 40.0])
-circuit.setPostWeight([0.0])
-circuit.setDesignSpace({
-    "R": (1.0, 100.0, 1.0, "k", True),
-})
+```json
+{
+  "run_name": "minimal",
+  "deck_path": "path/to/deck",
+  "reject_spec": [0.0],
+  "max_evals": 100,
+  "target_spec": [40.0],
+  "pre_weight": [0.025],
+  "post_weight": [0.0],
+  "design_space": {
+    "R": [1.0, 100.0, 1.0, "k", true]
+  }
+}
 ```
 
-대응 관계는 다음과 같다.
-
-- deck의 `{R0}`는 `setDesignSpace`의 `"R"`에 대응.
-- deck의 `echo gain_db ...`와 `setTargetSpec([40.0])`는 `gain_db`의 target 값을 40 dB로 설정. 
-- spec이 여러 개이면 deck에서 저장한 순서와 target/pre-weight/post-weight 순서를 동일하게 맞춘다.
+deck의 `{R0}`는 `design_space`의 `"R"`에 대응한다. `gain_db`는 유일한 spec이므로 네 spec 배열의 index 0에 대응하며 target은 40 dB이다.
 
 ## Design Space 정의
 
-`setDesignSpace`는 각 설계 변수 prefix의 기본 범위와 필요한 개별 범위를 정의한다.
+`design_space`는 각 설계 변수 prefix의 기본 범위와 필요한 개별 범위를 정의한다.
 
-```python
-"L": (180, 360, 5, "n", False)
+```json
+"L": [180, 360, 5, "n", false]
 ```
 
-tuple의 의미는 `(lower, upper, resolution, unit, is_log)`이다.
+배열의 의미는 `[lower, upper, resolution, unit, is_log]`이다.
 
 - `lower`, `upper`: 실제 값의 하한과 상한
-- `resolution`: 실제 값의 허용 간격. `None`이면 위 `AutoCircuit` 생성자에서 설정한 `10**(-digits)`를 사용한다.
-- `unit`: param 파일에서 값 뒤에 붙일 단위 문자열. 없으면 `""`
-- `is_log`: log scale이면 `True`, linear scale이면 `False`
+- `resolution`: 설계 변수 값의 허용 간격. `null`이어도 소수점 아래 `digits`자리까지만 표시된다.
+- `unit`: param 파일의 값 뒤에 붙일 단위(없으면 `""`).
+- `is_log`: log scale이면 `true`, linear scale이면 `false`. log scale의 하한과 상한은 양수여야 한다.
 
-예를 들어 위 설정은 `L` 값을 `180n`, `185n`, `190n`, ..., `360n` 중 하나로 사용한다는 뜻이다.
+이 설정의 `L` 값은 `180n`, `185n`, `190n`, ..., `360n` 중 하나이다.
 
-prefix만 적은 항목은 같은 종류의 모든 설계 변수에 적용되는 기본값이다. 특정 설계 변수의 전체 이름을 추가하면 그 변수만 기본값을 덮어쓴다.
+prefix 항목은 같은 prefix의 모든 설계 변수에 적용할 기본값이다. 개별 변수 항목은 해당 변수의 기본값만 덮어쓴다.
 
-```python
-circuit.setDesignSpace({
-    "M": (1, 60, 1, "", False),
-    "M10": (30, 60, 1, "", False),
-})
+```json
+"M": [1, 60, 1, "", false],
+"M10": [30, 60, 1, "", false]
 ```
 
-위 설정에서는 `M10`만 `30`부터 `60`까지 사용하고, 나머지 `M` 변수는 `1`부터 `60`까지 사용한다. deck에 없는 이름은 오류 없이 무시되므로, 개별 이름을 deck과 정확히 맞춰야 한다.
+`M10`만 `30`~`60`, 나머지 `M` 변수는 `1`~`60`을 사용한다. deck의 각 prefix에는 기본 항목 또는 모든 개별 항목이 필요하다. deck에 없는 `design_space` 항목은 사용하지 않는다.
 
-solver가 제안하는 값 `v`는 항상 `[0, 1]` 범위이다. 실제 값 `x`는 다음과 같이 변환된다.
+solver가 제안한 `[0, 1]` 범위의 값 `v`는 실제 값 `x`로 다음처럼 변환된다.
 
 linear scale:
 
@@ -208,14 +270,13 @@ $$
 x = 10^{\log_{10}(\mathrm{lower}) + v(\log_{10}(\mathrm{upper}) - \log_{10}(\mathrm{lower}))}
 $$
 
-그 뒤 실제 값은 `resolution`에 맞는 값으로 반올림된다. `resolution=None`이면 param 파일에는 `digits` 자리까지 기록된다.
+변환한 값은 `resolution`에 맞춰 반올림된다. `is_log`는 값의 범위를 바꾸지 않지만 solver 성능에는 영향을 줄 수 있다.
 
 ## FoM 정의
 
-FoM은 `Solver`가 최대화하는 점수이다. 따라서 FoM이 클수록 좋은 회로가 되게 FoM을 설계해야 한다.
-HACSA에서 기본제공하는 FoM은 다음과 같다:
+FoM은 `Solver`가 최대화하는 점수이다. 기본 FoM은 target 달성 전과 후를 나누어 계산한다.
 
-`pre_FoM`은 target에 대한 부족분만 점수에 반영한다.
+target을 만족하지 못한 동안에는 부족분만 반영한다.
 
 $$
 \mathrm{pre\_FoM}
@@ -223,7 +284,7 @@ $$
 \times \mathrm{pre\_weight}_i
 $$
 
-`post_FoM`은 target이 모두 충족한 design에만 적용한다.
+모든 target을 만족한 design의 `pre_FoM`은 0이다. `early_stop`이 `true`가 아니면 이 design에 다음 점수를 적용한다.
 
 $$
 \mathrm{post\_FoM}
@@ -231,66 +292,32 @@ $$
 \times \mathrm{post\_weight}_i
 $$
 
-target 자체가 최종 design goal이고 달성 후 별도 최적화가 필요하지 않다면 `post_weight`를 설정하지 않고 `pre_FoM`만 사용해도 된다.
-
-기본 `main.py`는 target을 모두 달성한 design을 찾으면 반복을 끝낸다. 그 후에도 사용하려면 `if store.isTargetAcheived(): break`를 주석처리해야 한다.
 
 
-## FoM 설계 팁
-
-`Circuit.py`의 `Circuit.calculateFoM()`에서 FoM을 수정할 수 있다.
-
-`self.spec_batch`의 각 행은 하나의 design이고, 각 열은 하나의 spec이다. 열 순서는 deck에서 spec을 저장한 순서이며, `setTargetSpec()`, `setPreWeight()`, `setPostWeight()`의 입력 순서도 이와 같다.
-
-다음은 LDO spec을 `[-T_R, -I_Q, I_LOAD_MAX]` 순서로 저장했다고 가정한 예이다. $T_R$과 $I_Q$는 작을수록 좋으므로 부호를 반대로 저장했다. 따라서 세 spec 모두 값이 클수록 좋은 방향이 된다.
-
-$$
-\mathrm{LDO\_FoM}
-= \frac{T_R \times I_Q}{I_{\mathrm{LOAD\_MAX}}}
-$$
-
-이 FoM은 작을수록 좋으므로, target을 만족한 design에는 그 역수를 최적화 점수로 사용한다. `calculateFoM()`은 다음과 같이 작성할 수 있다.
-
-```python
-def calculateFoM(self):
-    self.fom_batch = np.minimum(
-        self.spec_batch - self.target_spec, 0.0
-    ) @ self.pre_weight
-
-    target_met = self.fom_batch == 0.0
-    negative_t_r = self.spec_batch[target_met, 0]
-    negative_i_q = self.spec_batch[target_met, 1]
-    i_load_max = self.spec_batch[target_met, 2]
-
-    ldo_fom = negative_t_r * negative_i_q / i_load_max
-    self.fom_batch[target_met] = 1.0 / ldo_fom
-```
-
-`target_met`은 `pre_FoM`이 0인 행을 선택한다. 따라서 `self.spec_batch[target_met, 0]`, `self.spec_batch[target_met, 1]`, `self.spec_batch[target_met, 2]`는 선택된 모든 design의 `-T_R`, `-I_Q`, `I_LOAD_MAX`를 각각 가져온다. `-T_R`과 `-I_Q`를 곱하면 $T_R \times I_Q$가 되며, 이 연산은 선택된 모든 design에 한 번에 적용된다.
-
-# FoM sentinel
-만약 한 spec이라도 정상적으로 얻어지지 않았을 경우 그 design의 fom값은 Solver.tell(..., sentinel=-1e-3)에 의해 sentinel로 치환된다. sentinel값은 어떤 정상적인 fom보다 더 작지만, 정상적인 fom의 범위에서 너무 멀어지면 solver의 성능이 감소하 수 있다. 반대로 너무 크면 spec을 정상적으로 구할 수 없는 설계가 정상적인 설계보다 선호될 수도 있다. CMAES는 작은 sentinel의 값에 상대적으로 덜 민감하다.
+독자적인 FoM 설계는 [ADVANCED_USE.md의 FoM Contract](ADVANCED_USE.md#fom-contract)를 참고한다.
 
 ## 결과 파일
 
-실행 중 best FoM이 갱신되면 result 폴더에 다음 파일이 저장된다.
+결과는 `result_{run_name}` 디렉토리에 저장한다(`run_name`이 비면 `result`).
 
-- `best_param`: FoM이 가장 큰 design의 parameter값을 보관
-- `best_spec`: 그 design의 spec과 FoM을 보관
+실행 중 best FoM과 함께 갱신되는 파일:
 
-정상 종료 시 `store.saveArchive(circuit)`은 archive에 남은 design들을 저장한다.
+- `best_param`: FoM이 가장 큰 design의 parameter
+- `best_spec`: 해당 design의 spec과 FoM
 
-- `param_0`, `param_1`, ...: 저장된 design의 param 파일
-- `result_spec.csv`: 각 design의 FoM과 spec
+기본 저장소 `StoreParetoFront`는 모든 spec이 `reject_spec` 이상인 design 중 Pareto set을 result 디렉토리에 저장한다.
 
-현재 main.py는 design들의 [Pareto set](https://ko.wikipedia.org/wiki/%EA%B3%84%EC%95%BD_%EA%B3%A1%EC%84%A0)을 저장하고 있다.
+- `param_0`, `param_1`, ...: archive에 남은 design의 parameter
+- `result_spec.csv`: 각 design의 index, FoM, spec
+
+폴더·파일 구조, Pareto 선별 기준, CSV 성능 비교와 param 재실행은 [Results.md](Results.md)를 참고한다.
 
 ## 점검 항목
 
-- deck에 `{L0}`가 있다면 `setDesignSpace`에 `"L"` 항목이나 `"L0"` 항목이 있어야 한다.
-- spec 저장 순서와 `setTargetSpec`, `setPreWeight`, `setPostWeight` 순서가 일치해야 한다.
-- 작을수록 좋은 spec은 deck에서 부호를 반전해야 올바르게 Pareto set이 저장된다.
-- FoM이 클수록 좋은 design이 되게 설계해야 된다.
-- Windows에서 ngspice 실행 파일 경로가 `PATH`에 등록되어 있어야 한다. 또는 `ngspice_con.exe`의 경로를 Circuit.simulator에 등록하면 된다.
+- deck에 `{L0}`가 있다면 `design_space`에 `"L"`이나 `"L0"` 항목이 있어야 한다.
+- spec 저장 순서와 `reject_spec`, `target_spec`, `pre_weight`, `post_weight` 순서가 일치해야 한다.
+- 수동 설정에서는 네 spec 배열의 길이가 deck에서 저장하는 spec 개수와 같아야 한다.
+- 작을수록 좋은 spec은 deck에서 부호를 반전해야 한다.
+- 같은 `run_name`의 기존 temp/result 폴더가 필요한지 확인한 뒤 실행한다.
 
-고급 확장이 필요한 경우 `philosophy.md`를 참고하여 `MyCircuit` 또는 `Store`를 직접 구성한다.
+solver·FoM·store 선택과 custom `Circuit`은 [ADVANCED_USE.md](ADVANCED_USE.md)를 참고한다.

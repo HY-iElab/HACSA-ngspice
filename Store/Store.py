@@ -4,7 +4,7 @@ import shutil
 import numpy as np
 
 class Store:
-    def __init__(self, design_dim, spec_dim, reject_spec, temp_folder, run_name="", deck_name="input/deck"):
+    def __init__(self, design_dim, spec_dim, temp_folder, reject_spec=None, run_name="", deck_name="input/deck"):
         self.run_name = run_name
         self.result_folder = f"result_{run_name}" if run_name != "" else "result"
         self.temp_folder = temp_folder
@@ -15,7 +15,11 @@ class Store:
         self.fom_container = np.empty((self.container_cap,), dtype=np.float64)
 
         self.best_fom = -float("inf")
-        self.reject_spec = np.array(reject_spec, dtype=np.float64)
+        self.reject_spec = (
+            np.full(spec_dim, -np.inf, dtype=np.float64)
+            if reject_spec is None
+            else np.array(reject_spec, dtype=np.float64)
+        )
         
         shutil.rmtree(self.result_folder, ignore_errors=True)
         os.makedirs(self.result_folder)

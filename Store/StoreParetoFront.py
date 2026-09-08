@@ -92,8 +92,8 @@ def _updateParetoFront(design_container, spec_container, fom_container, size, de
 
 
 class StoreParetoFront(_Store):
-    def __init__(self, design_dim, spec_dim, reject_spec, temp_folder, run_name=""):
-        super().__init__(design_dim, spec_dim, reject_spec, temp_folder, run_name)
+    def __init__(self, design_dim, spec_dim, temp_folder, reject_spec=None, run_name=""):
+        super().__init__(design_dim, spec_dim, temp_folder, reject_spec, run_name)
         self._update_executor = ThreadPoolExecutor(max_workers=1)
         self._pending_update = None
 

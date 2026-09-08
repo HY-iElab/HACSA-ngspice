@@ -5,17 +5,34 @@ import subprocess
 from itertools import repeat
 import numpy as np
 from torch.quasirandom import SobolEngine
-from .Circuit import Circuit as _Circuit
+from .Circuit import Circuit as _Circuit, default_fom
+
+
+FAILED_SPEC = -1e10
 
 
 class AutoCircuit(_Circuit):
-    def __init__(self, run_name="", deck_path="sample/deck_ts", deck_imports=(), parallel = True, digits=3):
+    def __init__(
+        self,
+        run_name="",
+        deck_path="sample/deck_ts",
+        deck_imports=(),
+        parallel=True,
+        digits=3,
+        fom=default_fom,
+    ):
         with open(deck_path, "r") as file: deck = file.read()
         self.design_structure = self.getDesignStructure(deck)
         self.design_functions = ()
         self.digits = int(digits)
-        super().__init__(sum(self.design_structure.values()), self.getSpecNames(deck)
-                         , run_name=run_name, deck_path=deck_path, deck_imports=deck_imports)
+        super().__init__(
+            sum(self.design_structure.values()),
+            self.getSpecNames(deck),
+            run_name=run_name,
+            deck_path=deck_path,
+            deck_imports=deck_imports,
+            fom=fom,
+        )
         if parallel: self.evaluateDesign = self._evaluateDesignParallel
 
 
@@ -40,12 +57,21 @@ class AutoCircuit(_Circuit):
                 design_index += 1
         self.design_functions = tuple(functions)
 
-    def autoFoM(self, k, target=True):
+    def autoFoM(self, k, target=True, weights=True):
         self.design_batch = SobolEngine(self.design_dim).draw_base2(k).numpy()
         self.evaluateDesign()
-        if not target: self.setTargetSpec(self.spec_batch.mean(axis=0))
-        self.setPreWeight(1.0 / np.maximum(self.target_spec - self.spec_batch.min(axis=0), 1e-6))
-        self.setPostWeight(1.0 / np.maximum(self.spec_batch.max(axis=0) - self.target_spec, 1e-6))
+        valid_spec_columns = tuple(
+            self.spec_batch[self.spec_batch[:, i] != FAILED_SPEC, i]
+            for i in range(self.spec_dim)
+        )
+        assert all(values.size > 0 for values in valid_spec_columns), "autoFoM requires a valid value for every spec"
+        if not target:
+            self.setTargetSpec([values.mean() for values in valid_spec_columns])
+        if weights:
+            spec_min = np.array([values.min() for values in valid_spec_columns])
+            spec_max = np.array([values.max() for values in valid_spec_columns])
+            self.setPreWeight(1.0 / np.maximum(self.target_spec - spec_min, 1e-6))
+            self.setPostWeight(1.0 / np.maximum(spec_max - self.target_spec, 1e-6))
 
     def _makeDesignFunction(self, name, index, lower, upper, resolution, unit, is_log):
         lower = float(lower)
@@ -108,7 +134,7 @@ class AutoCircuit(_Circuit):
             self._handleMissingSpec(i, folder)
 
     def _handleMissingSpec(self, i, folder):
-        self.spec_batch[i].fill(-1e10)
+        self.spec_batch[i].fill(FAILED_SPEC)
         error_folder = os.path.join(folder, "error")
         os.rename(os.path.join(folder, f"param_{i}"), os.path.join(error_folder, f"param_{len(os.listdir(error_folder))}_{i}"))
 
