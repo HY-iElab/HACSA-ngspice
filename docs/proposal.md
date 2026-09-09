@@ -8,11 +8,11 @@
 
 | 제안 | 국문 위치 | 영문 위치 | 변경 범위 |
 |---|---|---|---|
-| 1. 자동 설정 규칙 | [README.md — Target과 weight 자동 설정](README.md#target과-weight-자동-설정), 112–119행 | [README_en.md — Automatic targets and weights](README_en.md#automatic-targets-and-weights), 112–119행 | 도입문과 네 행의 동작 표를 하나의 문단으로 교체 |
-| 2. 변수 번호 규칙 | [README.md — 2. 설계 변수 이름](README.md#2-설계-변수-이름), 176–178행 | [README_en.md — 2. Name the design variables](README_en.md#2-name-the-design-variables), 176–178행 | suffix 관련 세 목록 항목을 한 항목으로 교체 |
-| 3. Custom FoM 도입부 | [ADVANCED_USE.md — Custom FoM](ADVANCED_USE.md#custom-fom), 111행 | [ADVANCED_USE_en.md — Custom FoM](ADVANCED_USE_en.md#custom-fom), 111행 | 도입 문단을 한 문장으로 교체 |
-| 4. Pareto 선별 설명 | [RESULTS.md — Pareto set을 저장하는 이유](RESULTS.md#pareto-set을-저장하는-이유), 88행 | [RESULTS_en.md — Why save the Pareto set?](RESULTS_en.md#why-save-the-pareto-set), 88행 | 첫 문단 교체 |
-| 5. 구성 요소 표의 위치 | [ADVANCED_USE.md — Custom deck or specs](ADVANCED_USE.md#custom-deck-or-specs), 247–254행 → 현재 11행 앞 | [ADVANCED_USE_en.md — Custom deck or specs](ADVANCED_USE_en.md#custom-deck-or-specs), 247–254행 → 현재 11행 앞 | 도입문과 표를 목차 뒤, 첫 절의 앵커 앞으로 이동 |
+| 1. 자동 설정 규칙 | [README.md — Target과 weight 자동 설정](../README.md#ko-target과-weight-자동-설정), 112–119행 | [README_en.md — Automatic targets and weights](../README.md#en-automatic-targets-and-weights), 112–119행 | 도입문과 네 행의 동작 표를 하나의 문단으로 교체 |
+| 2. 변수 번호 규칙 | [README.md — 2. 설계 변수 이름](../README.md#ko-2-설계-변수-이름), 176–178행 | [README_en.md — 2. Name the design variables](../README.md#en-2-name-the-design-variables), 176–178행 | suffix 관련 세 목록 항목을 한 항목으로 교체 |
+| 3. Custom FoM 도입부 | [ADVANCED_USE.md — Custom FoM](ADVANCED_USE.md#ko-custom-fom), 111행 | [ADVANCED_USE_en.md — Custom FoM](ADVANCED_USE.md#en-custom-fom), 111행 | 도입 문단을 한 문장으로 교체 |
+| 4. Pareto 선별 설명 | [RESULTS.md — Pareto set을 저장하는 이유](RESULTS.md#ko-pareto-set을-저장하는-이유), 88행 | [RESULTS_en.md — Why save the Pareto set?](RESULTS.md#en-why-save-the-pareto-set), 88행 | 첫 문단 교체 |
+| 5. 구성 요소 표의 위치 | [ADVANCED_USE.md — Custom deck or specs](ADVANCED_USE.md#ko-custom-deck-or-specs), 247–254행 → 현재 11행 앞 | [ADVANCED_USE_en.md — Custom deck or specs](ADVANCED_USE.md#en-custom-deck-or-specs), 247–254행 → 현재 11행 앞 | 도입문과 표를 목차 뒤, 첫 절의 앵커 앞으로 이동 |
 
 ## 1. 자동 설정의 조합을 두 가지 규칙으로 설명
 
@@ -22,7 +22,7 @@
 
 ### 국문
 
-**위치:** [README.md — Target과 weight 자동 설정](README.md#target과-weight-자동-설정), **112–119행 전체**. 절 제목과 121행부터 이어지는 sample 설명은 유지한다.
+**위치:** [README.md — Target과 weight 자동 설정](../README.md#ko-target과-weight-자동-설정), **112–119행 전체**. 절 제목과 121행부터 이어지는 sample 설명은 유지한다.
 
 **원문**
 
@@ -45,7 +45,7 @@
 
 ### 영문
 
-**위치:** [README_en.md — Automatic targets and weights](README_en.md#automatic-targets-and-weights), **112–119행 전체**. 교체 범위는 국문과 같다.
+**위치:** [README_en.md — Automatic targets and weights](../README.md#en-automatic-targets-and-weights), **112–119행 전체**. 교체 범위는 국문과 같다.
 
 **원문**
 
@@ -74,7 +74,7 @@ Supplied targets and a complete pair of weight arrays are used as provided. Miss
 
 ### 국문
 
-**위치:** [README.md — 2. 설계 변수 이름](README.md#2-설계-변수-이름), **176–178행**.
+**위치:** [README.md — 2. 설계 변수 이름](../README.md#ko-2-설계-변수-이름), **176–178행**.
 
 **원문**
 
@@ -92,7 +92,7 @@ Supplied targets and a complete pair of weight arrays are used as provided. Miss
 
 ### 영문
 
-**위치:** [README_en.md — 2. Name the design variables](README_en.md#2-name-the-design-variables), **176–178행**.
+**위치:** [README_en.md — 2. Name the design variables](../README.md#en-2-name-the-design-variables), **176–178행**.
 
 **원문**
 
@@ -116,7 +116,7 @@ Supplied targets and a complete pair of weight arrays are used as provided. Miss
 
 ### 국문
 
-**위치:** [ADVANCED_USE.md — Custom FoM](ADVANCED_USE.md#custom-fom), **111행**.
+**위치:** [ADVANCED_USE.md — Custom FoM](ADVANCED_USE.md#ko-custom-fom), **111행**.
 
 **원문**
 
@@ -132,7 +132,7 @@ Python에서는 함수도 저장 가능하다. `config["fom"]`은 FoM 함수를 
 
 ### 영문
 
-**위치:** [ADVANCED_USE_en.md — Custom FoM](ADVANCED_USE_en.md#custom-fom), **111행**.
+**위치:** [ADVANCED_USE_en.md — Custom FoM](ADVANCED_USE.md#en-custom-fom), **111행**.
 
 **원문**
 
@@ -154,7 +154,7 @@ Assign a Python function to `config["fom"]` to customize the FoM calculation.
 
 ### 국문
 
-**위치:** [RESULTS.md — Pareto set을 저장하는 이유](RESULTS.md#pareto-set을-저장하는-이유), **88행**.
+**위치:** [RESULTS.md — Pareto set을 저장하는 이유](RESULTS.md#ko-pareto-set을-저장하는-이유), **88행**.
 
 **원문**
 
@@ -170,7 +170,7 @@ Assign a Python function to `config["fom"]` to customize the FoM calculation.
 
 ### 영문
 
-**위치:** [RESULTS_en.md — Why save the Pareto set?](RESULTS_en.md#why-save-the-pareto-set), **88행**.
+**위치:** [RESULTS_en.md — Why save the Pareto set?](RESULTS.md#en-why-save-the-pareto-set), **88행**.
 
 **원문**
 
@@ -194,14 +194,14 @@ The default store, `StoreParetoFront`, first retains only evaluated designs whos
 
 ### 국문
 
-**출발 위치:** [ADVANCED_USE.md — Custom deck or specs](ADVANCED_USE.md#custom-deck-or-specs), **247–254행**.
+**출발 위치:** [ADVANCED_USE.md — Custom deck or specs](ADVANCED_USE.md#ko-custom-deck-or-specs), **247–254행**.
 
-**도착 위치:** [ADVANCED_USE.md — Custom optimization loop](ADVANCED_USE.md#custom-optimization-loop) 앞, **현재 11행의 `<a id="전체-실행-흐름"></a>` 바로 앞**.
+**도착 위치:** [ADVANCED_USE.md — Custom optimization loop](ADVANCED_USE.md#ko-custom-optimization-loop) 앞, **현재 11행의 `<a id="전체-실행-흐름"></a>` 바로 앞**.
 
 **원문 — 이동할 도입문과 표**
 
 ```markdown
-[hacsa.py](hacsa.py)의 `run(config)` → `optimize(**config)`는 다음 요소를 연결한다.
+[hacsa.py](../hacsa.py)의 `run(config)` → `optimize(**config)`는 다음 요소를 연결한다.
 
 | 구성 요소 | 역할 |
 |---|---|
@@ -214,7 +214,7 @@ The default store, `StoreParetoFront`, first retains only evaluated designs whos
 **개선안 — 목차 다음에 들어갈 내용과 이어지는 첫 절**
 
 ```markdown
-[hacsa.py](hacsa.py)의 `run(config)` → `optimize(**config)`는 다음 요소를 연결한다.
+[hacsa.py](../hacsa.py)의 `run(config)` → `optimize(**config)`는 다음 요소를 연결한다.
 
 | 구성 요소 | 역할 |
 |---|---|
@@ -237,19 +237,19 @@ The default store, `StoreParetoFront`, first retains only evaluated designs whos
 
 기본 실행은 `AutoCircuit`을 생성한다. 다른 `Circuit`을 쓰려면 객체 생성과 최적화 루프를 Python으로 작성한다.
 
-[Circuit](Instance/Circuit.py)을 상속하고 생성자에서 설계 변수 수 `design_dim`과 spec 이름·순서 `spec_names`를 정한다. FoM 함수를 `fom`으로 받아 부모 생성자에도 전달한다.
+[Circuit](../Instance/Circuit.py)을 상속하고 생성자에서 설계 변수 수 `design_dim`과 spec 이름·순서 `spec_names`를 정한다. FoM 함수를 `fom`으로 받아 부모 생성자에도 전달한다.
 ```
 
 ### 영문
 
-**출발 위치:** [ADVANCED_USE_en.md — Custom deck or specs](ADVANCED_USE_en.md#custom-deck-or-specs), **247–254행**.
+**출발 위치:** [ADVANCED_USE_en.md — Custom deck or specs](ADVANCED_USE.md#en-custom-deck-or-specs), **247–254행**.
 
-**도착 위치:** [ADVANCED_USE_en.md — Custom optimization loop](ADVANCED_USE_en.md#custom-optimization-loop) 앞, **현재 11행의 `<a id="overall-workflow"></a>` 바로 앞**.
+**도착 위치:** [ADVANCED_USE_en.md — Custom optimization loop](ADVANCED_USE.md#en-custom-optimization-loop) 앞, **현재 11행의 `<a id="overall-workflow"></a>` 바로 앞**.
 
 **원문 — 이동할 도입문과 표**
 
 ```markdown
-In [hacsa.py](hacsa.py), `run(config)` → `optimize(**config)` connects the following components.
+In [hacsa.py](../hacsa.py), `run(config)` → `optimize(**config)` connects the following components.
 
 | Component | Role |
 |---|---|
@@ -262,7 +262,7 @@ In [hacsa.py](hacsa.py), `run(config)` → `optimize(**config)` connects the fol
 **개선안 — 목차 다음에 들어갈 내용과 이어지는 첫 절**
 
 ```markdown
-In [hacsa.py](hacsa.py), `run(config)` → `optimize(**config)` connects the following components.
+In [hacsa.py](../hacsa.py), `run(config)` → `optimize(**config)` connects the following components.
 
 | Component | Role |
 |---|---|
@@ -285,6 +285,5 @@ This example assumes that you have [implemented](#custom-solver) `Solver/MySolve
 
 The default workflow creates an `AutoCircuit`. To use a different `Circuit`, write the object initialization and optimization loop in Python.
 
-Subclass [Circuit](Instance/Circuit.py) and set the number of design variables, `design_dim`, and the spec names and order, `spec_names`, in the constructor. Accept the FoM function as `fom` and pass it to the parent constructor.
+Subclass [Circuit](../Instance/Circuit.py) and set the number of design variables, `design_dim`, and the spec names and order, `spec_names`, in the constructor. Accept the FoM function as `fom` and pass it to the parent constructor.
 ```
-
