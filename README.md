@@ -294,7 +294,7 @@ $$
 
 
 
-독자적인 FoM 설계는 [ADVANCED_USE.md의 FoM Contract](ADVANCED_USE.md#fom-contract)를 참고한다.
+독자적인 FoM 설계는 [FoM Contract](ADVANCED_USE.md#fom-contract)를 참고한다.
 
 ## 결과 파일
 

@@ -225,7 +225,7 @@ circuit, store = run(config)
 
 ## Custom solver
 
-기본 제공 solver 중에서 선택하려면 [README의 Solver 선택](README.md#solver-선택)을 참고한다.
+기본 제공 solver 중에서 선택하려면 [Solver 선택](README.md#solver-선택)을 참고한다.
 
 [Solver](Solver/Solver.py)를 상속해 `Solver/MySolver.py`에 `MySolver` 클래스를 만들고, JSON에 `"solver": "MySolver"`를 지정한다. 파일 이름과 클래스 이름은 같아야 한다.
 

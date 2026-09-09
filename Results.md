@@ -98,50 +98,7 @@ A와 B는 gain·대역폭의 trade-off를 보여준다. 이런 후보만 남기�
 
 `reject_spec`을 생략해도 Pareto 선별은 적용한다. `target_spec`은 FoM과 조기 종료에 쓰는 목표이며, 저장 하한인 `reject_spec`과 별개이다.
 
-`best_param`·`best_spec`은 `reject_spec`과 무관하게 최고 FoM을 기록하므로, 해당 설계안이 CSV에 없을 수 있다.
-
-## 선택한 설계안 다시 실행하기
-
-CSV에서 `idx`가 0인 설계안을 고르면, `result_0/param_0`의 `.param` 정의를 평가에 쓴 input deck·모델 파일과 결합해 재실행한다.
-
-`sample/deck_fc`의 결과를 새 `replay_0` 폴더에서 재실행하도록 준비하는 Python 예제이다. (프로젝트 폴더에서 실행한다)
-
-```python
-from pathlib import Path
-from shutil import copyfile
-
-replay = Path("replay_0")
-replay.mkdir()
-
-deck = Path("sample/deck_fc").read_text(encoding="utf-8")
-deck = deck.replace("@PARAM_PATH@", "param_0")
-deck = deck.replace("@SPEC_PATH@", "spec_0")
-(replay / "deck").write_text(deck, encoding="utf-8")
-copyfile("sample/pdk", replay / "pdk")
-copyfile("result_0/param_0", replay / "param_0")
-```
-
-`replay_0/deck`은 `param_0`를 include해 측정한 spec을 `spec_0`에 기록한다. `pdk`는 원래 deck이 include하는 모델 파일이다. 다른 deck으로 얻은 결과라면 평가에 쓴 deck과 `deck_imports`의 보조 파일들을 사용한다.
-
-Windows:
-
-```powershell
-cd replay_0
-ngspice_con.exe -b deck
-```
-
-Debian/Ubuntu:
-
-```bash
-cd replay_0
-ngspice -b deck
-```
-
-재계산한 `replay_0/spec_0`를 선택한 CSV 행과 비교한다. spec은 ngspice가 deck의 정의대로, FoM은 HACSA가 계산한다.
-
-다른 설계안은 복사할 원본을 `result_0/param_{idx}`로 바꾼다. 최고 FoM 설계안은 `result_0/best_param`을 복사하되, 대상 이름 `replay_0/param_0`는 유지한다.
-
-나중에 재현하려면 param과 함께 사용한 input deck, 모델 등의 보조 파일, JSON 설정도 보관한다. 이 입력 파일들은 결과 폴더에 자동 복사되지 않는다.
+`best_param`·`best_spec`은 `reject_spec`과 무관하게 저장되므로, 해당 설계안이 CSV에 없을 수 있다.
 
 ## 실행 중 파일이 만들어지는 과정
 
