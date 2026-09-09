@@ -1,5 +1,5 @@
 {
-  "run_name": 0,
+  "run_name": "ts",
   "deck_path": "sample/deck_ts",
   "deck_imports": ["sample/pdk"],
   "reject_spec": [-100.0, 0.0, 6.0, 40.0],

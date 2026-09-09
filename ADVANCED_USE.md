@@ -8,6 +8,15 @@
 - [Custom solver](#custom-solver)
 - [Custom deck or specs](#custom-deck-or-specs)
 
+[hacsa.py](hacsa.py)의 `run(config)` → `optimize(**config)`는 다음 요소를 연결한다.
+
+| 구성 요소 | 역할 |
+|---|---|
+| `Circuit` | 설계 변수를 시뮬레이터 입력으로 바꾸고 spec과 FoM을 계산한다 |
+| `AutoCircuit` | README의 deck 규칙에 맞춰 구현된 `Circuit`이다 |
+| `Solver` | 평가할 설계안을 제안하고 점수를 받아 탐색을 진행한다 |
+| `Store` | 평가 결과를 보관하고 파일로 저장한다 |
+
 <a id="전체-실행-흐름"></a>
 
 ## Custom optimization loop
@@ -108,7 +117,7 @@ print(store.spec_container[:store.size])
 
 ## Custom FoM
 
-Python에서는 함수도 저장 가능하다. `config["fom"]`은 FoM 함수를 저정한다. 
+`config["fom"]`에 Python 함수를 지정해 FoM 계산을 바꾼다.
 
 ```python
 from json import load
@@ -243,15 +252,6 @@ circuit, store = run(config)
 시뮬레이션과 저장은 실행 코드가 담당한다. 추가 생성자 인자가 필요하면 기본값을 두거나, [Custom optimization loop](#custom-optimization-loop)을 참고해 Python에서 직접 생성한다.
 
 ## Custom deck or specs
-
-[hacsa.py](hacsa.py)의 `run(config)` → `optimize(**config)`는 다음 요소를 연결한다.
-
-| 구성 요소 | 역할 |
-|---|---|
-| `Circuit` | 설계 변수를 시뮬레이터 입력으로 바꾸고 spec과 FoM을 계산한다 |
-| `AutoCircuit` | README의 deck 규칙에 맞춰 구현된 `Circuit`이다 |
-| `Solver` | 평가할 설계안을 제안하고 점수를 받아 탐색을 진행한다 |
-| `Store` | 평가 결과를 보관하고 파일로 저장한다 |
 
 기본 실행은 `AutoCircuit`을 생성한다. 다른 `Circuit`을 쓰려면 객체 생성과 최적화 루프를 Python으로 작성한다.
 

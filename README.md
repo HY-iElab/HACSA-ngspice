@@ -36,7 +36,7 @@ python -m pip install -r requirements.txt
 python hacsa.py sample_manual.json
 ```
 
-이 명령은 `sample/deck_fc`의 최적화 결과를 `result_0`에 저장한다. 실행 시작 시 기존 `temp_0`과 `result_0`은 교체된다.
+이 명령은 `sample/deck_fc`의 최적화 결과를 `result_fc`에 저장한다. 실행 시작 시 기존 `temp_fc`와 `result_fc`는 교체된다.
 
 ### 설정 파일
 
@@ -71,7 +71,7 @@ target과 weight를 직접 지정한 설정 예제이다(`sample_manual.json` �
 - `early_stop`: target 달성 시 종료 여부(기본값 `false`).
 - `target_spec`: 각 spec의 최소 목표값(생략 시 자동 설정).
 - `pre_weight`: 하나라도 target 미달일 때 FoM에 적용할 양의 가중치.
-- `post_weight`: 모든 target 달성 시 FoM에 적용할 양의 가중치. 두 weight 중 하나라도 생략하면 둘 다 자동 설정.
+- `post_weight`: 모든 target 달성 시 FoM에 적용할 0 이상의 가중치. 두 weight 중 하나라도 생략하면 둘 다 자동 설정.
 - `design_space`: deck의 설계 변수별 [탐색 범위](#design-space-정의). 배열 순서는 `[lower, upper, resolution, unit, is_log]`.
 
 `reject_spec`, `target_spec`, `pre_weight`, `post_weight`는 모두 deck의 spec 저장 순서를 따른다(`sample/deck_fc`의 대응은 아래 표 참조).
@@ -173,9 +173,7 @@ C0 n1 0 {C0}
 이름 규칙은 다음과 같다.
 
 - prefix는 영문자와 `_`의 조합이다: `L`, `W`, `M`, `R`, `C`, `_Aa_Bce_`, `AaaeE_FG`
-- suffix는 `0`부터 시작하는 정수이다.
-- 같은 prefix 안에서는 번호를 `L0`, `L1`, `L2`처럼 연속해서 붙인다.
-- 변수가 하나여도 `R0`처럼 `0` suffix를 붙인다.
+- 같은 prefix의 변수에는 `L0`, `L1`, `L2`처럼 0부터 연속된 정수 suffix를 붙인다. 변수가 하나여도 `R0`처럼 번호를 붙인다.
 
 ### 3. Spec 저장
 
@@ -308,7 +306,7 @@ $$
 - `param_0`, `param_1`, ...: archive에 남은 design의 parameter
 - `result_spec.csv`: 각 design의 index, FoM, spec
 
-폴더·파일 구조, Pareto 선별 기준, CSV 성능 비교와 param 재실행은 [RESULTS.md](RESULTS.md)를 참고한다.
+폴더·파일 구조, Pareto 선별 기준, CSV 성능 비교는 [RESULTS.md](RESULTS.md)를 참고한다.
 
 ## 점검 항목
 

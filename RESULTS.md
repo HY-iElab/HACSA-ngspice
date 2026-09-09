@@ -1,12 +1,12 @@
 # 결과 확인과 재사용
 
-다음 명령의 최적화 결과는 `result_0` 폴더에서 확인한다.
+다음 명령의 최적화 결과는 `result_fc` 폴더에서 확인한다.
 
 ```bash
 python hacsa.py sample_manual.json
 ```
 
-`sample_manual.json`의 `run_name`은 `0`이다. 기본 회로 `AutoCircuit`과 기본 저장소 [StoreParetoFront](#pareto-set을-저장하는-이유)를 기준으로 설명한다.
+`sample_manual.json`의 `run_name`은 `"fc"`이다. 기본 회로 `AutoCircuit`과 기본 저장소 [StoreParetoFront](#pareto-set을-저장하는-이유)를 기준으로 설명한다.
 
 ## 생성되는 폴더와 파일
 
@@ -18,7 +18,7 @@ HACSA-ngspice/
 ├── sample/
 │   ├── deck_fc
 │   └── pdk
-├── temp_0/
+├── temp_fc/
 │   ├── pdk
 │   ├── 0
 │   ├── 1
@@ -30,7 +30,7 @@ HACSA-ngspice/
 │   ├── spec_1
 │   ├── ...
 │   └── error/
-└── result_0/
+└── result_fc/
     ├── best_param
     ├── best_spec
     ├── param_0
@@ -43,24 +43,26 @@ HACSA-ngspice/
 |---|---|
 | `sample_manual.json` | 탐색 범위, target, weight 등의 실행 설정 |
 | `sample/deck_fc`, `sample/pdk` | 입력 deck과 그 deck이 include하는 모델 파일 |
-| `temp_0/pdk` | `deck_imports`에서 작업 폴더로 복사한 모델 파일 |
-| `temp_0/0`, `temp_0/1`, ... | 입력 deck의 [실행용 복제본](#실행-중-파일이-만들어지는-과정). 확장자 없이 번호를 이름으로 사용한다 |
-| `temp_0/param_i` | batch의 i번째 설계안을 시뮬레이션할 parameter |
-| `temp_0/spec_i` | 해당 시뮬레이션에서 deck이 기록한 spec |
-| `temp_0/error/` | spec 파일을 만들지 못한 설계안의 param 파일을 보관하는 폴더 |
-| `result_0/best_param`, `result_0/best_spec` | 최고 FoM을 얻은 설계안의 parameter와 spec. `best_spec` 마지막 줄에는 FoM도 기록한다 |
-| `result_0/param_i` | 최종 보관한 i번째 설계안의 [parameter](#선택한-설계안-다시-실행하기). CSV의 `idx`가 i인 행에 대응한다 |
-| `result_0/result_spec.csv` | 최종 보관한 설계안들의 [index, FoM, spec을 모은 표](#csv로-설계안-비교하기) |
+| `temp_fc/pdk` | `deck_imports`에서 작업 폴더로 복사한 모델 파일 |
+| `temp_fc/0`, `temp_fc/1`, ... | 입력 deck의 [실행용 복제본](#실행-중-파일이-만들어지는-과정). 확장자 없이 번호를 이름으로 사용한다 |
+| `temp_fc/param_i` | batch의 i번째 설계안을 시뮬레이션할 parameter |
+| `temp_fc/spec_i` | 해당 시뮬레이션에서 deck이 기록한 spec |
+| `temp_fc/error/` | spec 파일을 만들지 못한 설계안의 param 파일을 보관하는 폴더 |
+| `result_fc/best_param`, `result_fc/best_spec` | 최고 FoM을 얻은 설계안의 parameter와 spec. `best_spec` 마지막 줄에는 FoM도 기록한다 |
+| `result_fc/param_i` | 최종 보관한 i번째 설계안의 parameter. CSV의 `idx`가 i인 행에 대응한다 |
+| `result_fc/result_spec.csv` | 최종 보관한 설계안들의 [index, FoM, spec을 모은 표](#csv로-설계안-비교하기) |
 
-작업 폴더 `temp_0`는 batch마다 같은 번호를 재사용하므로 전체 평가 이력은 아니다. `result_0`는 보관한 설계안에 새 번호를 붙인다. **`temp_0/param_0`와 `result_0/param_0`는 같은 설계안이라고 볼 수 없다.**
+작업 폴더 `temp_fc`는 batch마다 같은 번호를 재사용하므로 전체 평가 이력은 아니다. `result_fc`는 보관한 설계안에 새 번호를 붙인다. **`temp_fc/param_0`와 `result_fc/param_0`는 같은 설계안이라고 볼 수 없다.**
 
-`best_param`·`best_spec`은 실행 중 최고 FoM 갱신 시, `result_0/param_i`와 CSV는 최적화 완료 시 저장한다. 보관 기준을 통과한 설계안이 없으면 CSV에는 열 이름만 있고 `param_i`는 없다.
+`best_param`·`best_spec`은 실행 중 최고 FoM 갱신 시, `result_fc/param_i`와 CSV는 최적화 완료 시 저장한다. 보관 기준을 통과한 설계안이 없으면 CSV에는 열 이름만 있고 `param_i`는 없다.
 
 `run_name`이 `"fc"`이면 `temp_fc`·`result_fc`, 빈 문자열이면 `temp`·`result` 폴더를 쓴다. 같은 `run_name`으로 재실행하면 두 폴더를 교체하므로, 보관할 결과는 미리 다른 곳으로 복사한다.
 
+저장한 설계안을 다시 시뮬레이션하려면, 사용할 deck에서 해당 `param_i` 또는 `best_param` 파일을 `.include`하고 SPICE로 직접 실행한다.
+
 ## CSV로 설계안 비교하기
 
-`result_0/result_spec.csv`를 스프레드시트 프로그램으로 연다(한 열로 읽히면 구분자를 쉼표로 지정한다). `sample/deck_fc`의 CSV 첫 행은 다음과 같다.
+`result_fc/result_spec.csv`를 스프레드시트 프로그램으로 연다(한 열로 읽히면 구분자를 쉼표로 지정한다). `sample/deck_fc`의 CSV 첫 행은 다음과 같다.
 
 ```csv
 idx,fom,negative_total_current_uA,gain_db,log10_ugbw,pm_deg,cmrr_db
@@ -83,7 +85,7 @@ CSV에는 deck에서 바꾼 부호와 단위가 그대로 저장된다. 위 열 
 
 ## Pareto set을 저장하는 이유
 
-기본 저장소 `StoreParetoFront`는 평가한 설계안 중 모든 spec이 `reject_spec` 이상인 것만 남긴다. 그중 다른 설계안보다 모든 spec이 같거나 나쁘고 하나 이상 더 나쁜 설계안을 제외한다. 남은 집합이 저장할 Pareto set이다.
+`StoreParetoFront`는 모든 spec이 `reject_spec` 이상인 설계안 중 Pareto set을 보관한다. 다른 설계안이 모든 spec에서 같거나 더 좋고, 하나 이상에서 더 좋으면 해당 설계안은 제외한다.
 
 두 spec(gain, 대역폭)이 클수록 좋고, 저장 하한이 각각 50 dB, 5 MHz인 예시이다.
 
@@ -102,15 +104,15 @@ A와 B는 gain·대역폭의 trade-off를 보여준다. 이런 후보만 남기�
 
 ## 실행 중 파일이 만들어지는 과정
 
-입력 deck은 설계안마다 parameter·spec 경로를 바꿔 복제해 실행한다. batch의 0번째 설계안에 쓸 `temp_0/0`의 치환 예시이다.
+입력 deck은 설계안마다 parameter·spec 경로를 바꿔 복제해 실행한다. batch의 0번째 설계안에 쓸 `temp_fc/0`의 치환 예시이다.
 
-| 입력 deck | 실행용 복제본 `temp_0/0` |
+| 입력 deck | 실행용 복제본 `temp_fc/0` |
 |---|---|
 | `.include @PARAM_PATH@` | `.include param_0` |
 | `> @SPEC_PATH@` | `> spec_0` |
 | `>> @SPEC_PATH@` | `>> spec_0` |
 
-`temp_0/1`에서는 같은 자리에 `param_1`, `spec_1`을 쓴다. 복제본의 회로·해석 명령은 입력 deck에서 가져온다. `deck_imports`의 파일은 원래 이름으로 작업 폴더에 복사한다.
+`temp_fc/1`에서는 같은 자리에 `param_1`, `spec_1`을 쓴다. 복제본의 회로·해석 명령은 입력 deck에서 가져온다. `deck_imports`의 파일은 원래 이름으로 작업 폴더에 복사한다.
 
 `param_i`의 형식 예시이다.
 
@@ -121,7 +123,7 @@ A와 B는 gain·대역폭의 trade-off를 보여준다. 이런 후보만 남기�
 
 solver의 0~1 설계 변수는 `design_space`의 범위·간격에 맞는 실제 값으로 변환해 기록한다. ngspice는 deck의 `{R0}`, `{C0}` 등에 include한 `.param` 값을 사용한다. 변환 규칙은 [README의 Design Space 정의](README.md#design-space-정의)를 참고한다.
 
-ngspice는 `temp_0` 안에서 복제본을 실행하고, deck의 `echo` 명령으로 `spec_i`를 만든다. 다음은 spec 파일의 형식 예시이다.
+ngspice는 `temp_fc` 안에서 복제본을 실행하고, deck의 `echo` 명령으로 `spec_i`를 만든다. 다음은 spec 파일의 형식 예시이다.
 
 ```text
 negative_total_current_uA -5.2
