@@ -94,11 +94,14 @@ store.saveArchive(circuit)
 ```python
 print(circuit.spec_names)
 print(store.best_fom)
+print(store.size)
+print(store.result_folder)
 print(store.spec_container[:store.size])
 ```
 
 - `circuit.spec_names`: spec 이름과 저장 순서.
 - `store.best_fom`: 평가한 설계안 중 최고 FoM.
+- `store.result_folder`: [결과 파일](Results.md)을 저장한 폴더.
 - `store.spec_container[:store.size]`: 보관한 설계안의 spec 배열. `store.size`는 보관한 설계안 수이며, 각 열은 `circuit.spec_names` 순서이다.
 
 <a id="fom-contract"></a>
@@ -121,6 +124,8 @@ def my_fom(spec_batch, target_spec, pre_weight, post_weight):
 with open("sample_manual.json", encoding="utf-8") as file:
     config = load(file)
 
+config["run_name"] = "custom_fom"
+config["max_evals"] = 200
 config["fom"] = my_fom
 
 circuit, store = run(config)

@@ -144,11 +144,9 @@ python hacsa.py sample_auto.json
 }
 ```
 
-`auto_fom`을 추가해 target·weight 자동 설정용 표본 수를 기본 $2^7 = 128$에서 바꾼다.
+`auto_fom`을 추가해 target·weight 자동 설정용 표본 수를 기본 $2^7 = 128$에서 바꾼다. 이 평가는 solver 실행 전에 수행하며 `max_evals`에 포함되지 않는다.
 
 자동 계산은 각 spec의 측정 실패값만 제외하고 mean/min/max를 구한다. 같은 design의 다른 spec이 정상이면 그 값은 계산에 포함한다. 각 spec에는 정상 측정값이 하나 이상 필요하다.
-
-세부 조정은 [tutorial.ipynb](tutorial.ipynb)를 참고한다.
 
 ## Deck 작성 규칙
 
