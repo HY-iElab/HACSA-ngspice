@@ -63,7 +63,7 @@ solver = MySolver(dim=circuit.design_dim, MAX_EVALS=max_evals)
 
 - `store`: `MyStore`에 구현한 기준으로 결과를 보관한다. `circuit.design_dim`과 `circuit.spec_dim`은 각각 설계 변수 수와 spec 수이며, `circuit.temp_folder`는 시뮬레이션 파일이 있는 작업 폴더이다.
 - `max_evals`, `early_stop`: JSON의 평가 횟수와 조기 종료 설정이다. `early_stop`을 생략하면 `False`를 사용한다.
-- `solver`: `MySolver`에 설계 변수 수를 `dim`으로, 평가 횟수를 `MAX_EVALS`로 전달한다.
+- `solver`: `MySolver`에 설계 변수 수를 `dim`으로, 평가 횟수를 `MAX_EVALS`로 전달한다. custom solver이므로 다른 입력도 취할 수 있다.
 
 ```python
 evaluations_done = 0
@@ -83,11 +83,11 @@ while evaluations_done < max_evals:
 store.saveArchive(circuit)
 ```
 
-- `candidates`의 한 행이 한 설계안이며, 각 설계 변수는 0~1 범위이다.
+- `candidates`는 `batch_size` 개의 설계안이다.각 설계안은 netlist의 설계변수의 값을 명시한다.
+- `candidates`는 `circuit.evaluateDesign()`을 통해 ngspice로 평가된다.
+- 평가된 spec은 `Circuit.calculateFoM()`에서 FoM으로 계산되며 solver와 store는 그 결과를 사용한다. FoM 계산식을 바꾸려면 [Custom FoM](#custom-fom)을 참고한다.
 - `spec_batch`와 `fom_batch`는 `design_batch`와 같은 설계안 순서를 따른다.
-- `batch_size`는 한 번에 평가한 설계안 수이다.
-
-`AutoCircuit`은 `resolution`에 맞춘 반올림을 `design_batch`에도 반영한다. `tell`에는 **실제로 평가한 `circuit.design_batch`**를 전달한다. FoM은 `Circuit.calculateFoM()`에서 계산하며 solver와 store는 그 결과를 사용한다. 계산식을 바꾸려면 [Custom FoM](#custom-fom)을 참고한다.
+- `solver.tell`은 평가된 `design_batch`를 solver에게 전달한다. 
 
 저장한 결과는 다음처럼 확인한다.
 
@@ -105,13 +105,11 @@ print(store.spec_container[:store.size])
 
 ## Custom FoM
 
-`config["fom"]`에 FoM 함수를 지정한다. 함수는 JSON에 담을 수 없어 Python에서 지정한다.
+Python에서는 함수도 저장 가능하다. `config["fom"]`은 FoM 함수를 저정한다. 
 
 ```python
 from json import load
-
 import numpy as np
-
 from hacsa import run
 
 
@@ -142,7 +140,7 @@ circuit, store = run(config)
 
 spec과 세 설정 배열은 **deck의 spec 저장 순서**(`circuit.spec_names`)를 따른다. 사용하지 않는 인자도 함수 정의에는 남겨 둔다.
 
-solver는 점수가 클수록 좋다고 판단한다. `"early_stop": true`이면 최고 FoM이 0 이상일 때 종료하므로, target 미달에는 음수, 모두 달성하면 0 이상을 반환한다. 기본 계산식은 [README의 FoM 정의](README.md#fom-정의)를 참고한다.
+solver는 점수가 클수록 좋다고 판단한다. `"early_stop": true`이면 최고 FoM이 0 이상일 때 종료하므로, target 미달에는 음수, 모두 달성하면 0 이상을 반환한다. 기본 계산식은 [FoM 정의](README.md#fom-정의)를 참고한다.
 
 ### 예: LDO 점수 계산
 
