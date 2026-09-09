@@ -101,7 +101,7 @@ print(store.spec_container[:store.size])
 
 - `circuit.spec_names`: spec 이름과 저장 순서.
 - `store.best_fom`: 평가한 설계안 중 최고 FoM.
-- `store.result_folder`: [결과 파일](Results.md)을 저장한 폴더.
+- `store.result_folder`: [결과 파일](RESULTS.md)을 저장한 폴더.
 - `store.spec_container[:store.size]`: 보관한 설계안의 spec 배열. `store.size`는 보관한 설계안 수이며, 각 열은 `circuit.spec_names` 순서이다.
 
 <a id="fom-contract"></a>
@@ -181,7 +181,7 @@ def ldo_fom(spec_batch, target_spec, pre_weight, post_weight):
 
 ## Storing results
 
-앞 예제의 `MyStore`를 다음처럼 구현해 `Store/MyStore.py`에 저장한다. 이 구현은 `reject_spec`을 통과한 결과를 모두 보관한다. 기본 저장소인 `StoreParetoFront`의 선별 기준과 결과 파일 사용법은 [Results.md](Results.md)를 참고한다.
+앞 예제의 `MyStore`를 다음처럼 구현해 `Store/MyStore.py`에 저장한다. 이 구현은 `reject_spec`을 통과한 결과를 모두 보관한다. 기본 저장소인 `StoreParetoFront`의 선별 기준과 결과 파일 사용법은 [RESULTS.md](RESULTS.md)를 참고한다.
 
 ```python
 import numpy as np

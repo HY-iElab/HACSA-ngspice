@@ -308,7 +308,7 @@ $$
 - `param_0`, `param_1`, ...: archive에 남은 design의 parameter
 - `result_spec.csv`: 각 design의 index, FoM, spec
 
-폴더·파일 구조, Pareto 선별 기준, CSV 성능 비교와 param 재실행은 [Results.md](Results.md)를 참고한다.
+폴더·파일 구조, Pareto 선별 기준, CSV 성능 비교와 param 재실행은 [RESULTS.md](RESULTS.md)를 참고한다.
 
 ## 점검 항목
 
