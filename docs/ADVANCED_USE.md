@@ -120,6 +120,8 @@ print(store.spec_container[:store.size])
 - `store.result_folder`: Folder containing the [result files](RESULTS.md#en).
 - `store.spec_container[:store.size]`: Spec array for the retained designs. `store.size` is the number of retained designs; columns follow `circuit.spec_names`.
 
+Run [main.py](../main.py) with `python main.py` for an example that configures the two-stage circuit directly in Python, evaluates designs in parallel, and stops when the targets are met.
+
 <a id="en-fom-contract"></a>
 
 <a id="en-custom-fom"></a>
@@ -410,6 +412,8 @@ print(store.spec_container[:store.size])
 - `store.best_fom`: 평가한 설계안 중 최고 FoM.
 - `store.result_folder`: [결과 파일](RESULTS.md#ko)을 저장한 폴더.
 - `store.spec_container[:store.size]`: 보관한 설계안의 spec 배열. `store.size`는 보관한 설계안 수이며, 각 열은 `circuit.spec_names` 순서이다.
+
+[main.py](../main.py)는 two-stage 회로를 Python에서 직접 구성하는 예제로, `python main.py`로 실행하며 병렬 평가하고 target 달성 시 종료한다.
 
 <a id="ko-fom-contract"></a>
 
