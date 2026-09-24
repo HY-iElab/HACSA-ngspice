@@ -1,0 +1,58 @@
+* Two stage OPAMP
+.include "pdk"
+.include @PARAM_PATH@
+
+mp1 n4 n4 VDD VDD pmos l={L0} w={W0} m={M0}
+mp2 n5 n4 VDD VDD pmos l={L0} w={W0} m={M0}
+
+mn1 n4 n2 n3 n3 nmos l={L1} w={W1} m={M1}
+mn2 n5 n1 n3 n3 nmos l={L1} w={W1} m={M1}
+
+mn3 n3 n6 VSS VSS nmos l={L2} w={W2} m={M2}
+
+mn4 n6 n6 VSS VSS nmos l={L3} w={W3} m={M3}
+
+mp3 vout n5 VDD VDD pmos l={L4} w={W4} m={M4}
+
+mn5 vout n6 VSS VSS nmos l={L5} w={W5} m={M5}
+
+cc n5 vout {C0}
+ibias VDD n6 {I0}
+
+vin in 0 dc=0 ac=1.0
+ein1 n1 cm in 0 0.5
+ein2 n2 cm in 0 -0.5
+vcm cm 0 dc=0.6
+vdd VDD 0 dc=1.2
+vss 0 VSS dc=0
+
+.control
+option numdgt=8
+set units=degrees
+
+op
+let negative_total_current_uA = i(vdd) * 1e6
+echo negative_total_current_uA $&negative_total_current_uA > @SPEC_PATH@
+
+reset
+ac dec 10 1k 10G
+
+let gain_db = vdb(vout)[0]
+
+if (gain_db gt 0) & (vecmin(vdb(vout)) le 0)
+  meas ac ugbw_hz when vdb(vout)=0 fall=1
+  meas ac phase_deg find vp(vout) when vdb(vout)=0 fall=1
+  let log10_ugbw = log10(ugbw_hz)
+  let pm_deg = phase_deg - 180 * phase_deg / abs(phase_deg)
+else
+  let log10_ugbw = -1e10
+  let pm_deg = -1e10
+end
+
+echo gain_db $&gain_db >> @SPEC_PATH@
+echo log10_ugbw $&log10_ugbw >> @SPEC_PATH@
+echo pm_deg $&pm_deg >> @SPEC_PATH@
+
+.endc
+
+.end
